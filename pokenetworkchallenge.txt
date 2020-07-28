@@ -1,0 +1,31 @@
+Hey Dana type something if you can see this lol
+
+I want to get from Pikachu to Hit Mon Lee
+ERROR
+Steps:
+
+-query for pokemon: pikachu
+  - it will return an object -> pikachu.abilities[0].ability.name
+  - take the ability name
+  - add and check it against a set of visited abilities
+  Also need to trace ablities because this will be a more unique path to the destination
+  - do that for each of the abilities of that pokemon to get all of the edges for that pokemon before moving onto the next pokemon
+  
+-query pokemon?ability=name
+ - results in a list of pokemon with that ability.
+ - add the first pokemon to a stack (a list of pokemon that you have visited in order
+ - check if that pokemon is Hit Mon Lee if it is 
+   - trace the stack so that you know the path from Pikachu to Hit Mon Lee
+     - add that trace to an array.
+ -make sure you haven't visited that pokemon (add it to a set and check against set)
+   - if I have visited that pokemon then don't queue it.
+   - otherwise enque that url
+                     
+                     pikachu
+            /                        \
+        static                    lightning
+  / / / / / / / / /                     //////
+  zapdos                                   hitmonlee                           
+  //////
+  hitmonleee
+  
