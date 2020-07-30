@@ -129,9 +129,10 @@ async function pokePath(
       }
       console.log(solutionPaths);
       if (!destinationFound) {
+        //probably don't want to do this
         alreadyCheckedAbilities.add(ability.name);
         pathArrayCopy.push(ability.name);
-        //console.log(pathArrayCopy);
+        console.log(pathArrayCopy);
         return pokePath(
           origin,
           destination,
@@ -172,6 +173,6 @@ async function pokePath(
   //console.log(pokemonWithSlam);
 }
 
-pokePath(["pikachu"], "raichu").then((solution) => {
+pokePath(["pikachu"], "klang").then((solution) => {
   console.log(solution);
 });

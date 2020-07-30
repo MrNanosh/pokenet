@@ -1,0 +1,61 @@
+// input: pokemon1, pokemon2
+// output: true or false
+
+//to get true I must find at least one path to pokemon2 from pokemon1
+//to get false I must exhaust all paths between the two pokemon1
+
+//api endpoints: 
+  EP1//input: pokemon; output: all abilities of that pokemon1
+  EP2//input: ability-name; output: all pokemon with that ability
+
+//worse case time complexity will result from searching the set of paths directly connected to pokemon1.
+//so between DFS and BFS there is no difference in this scenario
+
+//So the BFS solution will necessitate queueing the children by layer from Pokemon1
+
+//first pass compile a list of children nodes of any pokemon from front of the queue
+ //EP1-> all abilities of pokemon1 -> EP2-> all first childreen of any pokemon from front of the queue.
+ //queue all the first children. BUT we must not queue pokemon that were already queued to avoid cirlcular paths
+ //do not queue pokemon that were in an ability that was already checked.
+
+  //I want to repeat this strategy on all children 
+
+
+
+Steverino's Solution
+
+Given: pokemonA pokemonB
+Given: getAbilities() API get abilities by Pokemon name
+Given: getPokemon() API get pokemon by Ability name
+Prompt: return whether there's a path from pokemonA to pokemonB
+O(n) (where n is the total number of pokemon)
+// queue[pokemonA]
+function checkConnected(a, b)
+  set pokeSet
+  set abilitySet
+  queue upcoming
+  upcoming.push(pokemonA)
+  pokeSet.add(pokemonA)
+  while(upcoming.length > 0)
+    current = upcoming.pull()
+    currentAbilities = getAbilities(current)
+    foreach(ability in currentAbilities)
+      if ability in abilitySet
+        continue
+      abilitySet.add(ability)
+      currentPokemon = getPokemon(ability)
+      currentPokemon.forEach((p) => pokemon in currentPokemon)
+        if pokemon in pokeSet
+          continue
+        if pokemon == pokemonB
+          return true
+        pokeSet.add(pokemon)
+        upcoming.push(pokemon)
+  return false
+
+
+
+
+
+
+
