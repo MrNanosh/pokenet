@@ -72,9 +72,9 @@ const getAllPokemonWithAbility = async (ability) => {
   try {
     let pokemonWithAbility = JSON.parse(abilityData).pokemon;
     //filter out data that I don't need (keep only the name and url)
-    pokemonWithAbility = pokemonWithAbility.map(
-      (object) => object.pokemon.name
-    );
+    pokemonWithAbility = pokemonWithAbility.map((object) => {
+      return { name: object.pokemon.name };
+    });
     return pokemonWithAbility;
   } catch (error) {
     console.error("ability not found");
@@ -95,77 +95,64 @@ async function pokePath(
   alreadyCheckedAbilities = new Set(),
   solutionPaths = []
 ) {
-  //console.log(origin);
-  // get origin assuming it its a queue first dequeue
-  const originPokemon = await httpRequest(getPokemonWithName(origin[0]));
-  alreadyCheckedPokemon.add(origin.shift());
-
-  // get the abilities of the origin (array)
-  const originPokemonAbilities = JSON.parse(originPokemon).abilities.map(
-    (element) => element.ability
-  );
-  //console.log(originPokemonAbilities);
+  if (typeof origin === "string") {
+    origin = [{ name: origin, path: [] }];
+  } else {
+    throw new Error("origin must be a string");
+  }
+  console.log(origin);
 
   // for each ability check that it hasn't been checked, get all the pokemon with that ability, if any of those pokemon = destination then stop and add that one ability to queue.
-  let destinationFound = false;
-  for (let ability of originPokemonAbilities) {
-    let pathArrayCopy = [...pathArray];
-    if (!alreadyCheckedAbilities.has(ability.name)) {
-      const nextPokemon = await getAllPokemonWithAbility(ability.name);
-      //console.log(nextPokemon);
-      if (nextPokemon.includes(destination)) {
-        console.log("huzzah!");
-        pathArrayCopy.push(ability.name);
-        solutionPaths.push(pathArrayCopy);
-        destinationFound = true;
-      } else {
+  while (origin.length > 0) {
+    // get origin assuming it its a queue
+    const originPokemon = await httpRequest(getPokemonWithName(origin[0].name));
+    let pathArrayCopy = [...origin[0].path];
+    alreadyCheckedPokemon.add(origin.shift());
+
+    // get the abilities of the origin (array)
+    const originPokemonAbilities = JSON.parse(originPokemon).abilities.map(
+      (element) => element.ability
+    );
+
+    // loop through abilities of that pokemon at the front of the queue
+    let destinationFound = false;
+    for (let ability of originPokemonAbilities) {
+      destinationFound = false;
+
+      let pathArrayCopyCopy = [...pathArrayCopy];
+      if (!alreadyCheckedAbilities.has(ability.name)) {
+        const nextPokemon = await getAllPokemonWithAbility(ability.name);
+
+        pathArrayCopyCopy.push(ability.name);
+
+        console.log(nextPokemon, " length of pokequeue: ", origin.length);
+
+        if (nextPokemon.some((pokemon) => pokemon.name === destination)) {
+          console.log("huzzah!");
+          solutionPaths.push(pathArrayCopyCopy);
+          destinationFound = true;
+        } else {
+          //console.log(pathArrayCopy);
+        }
+
         // enqueue all pokemon with that ability if they haven't been checked before
         nextPokemon.forEach(async (pokemon) => {
-          if (!alreadyCheckedPokemon.has(pokemon)) {
+          if (!alreadyCheckedPokemon.has(pokemon.name)) {
+            pokemon["path"] = pathArrayCopyCopy;
             origin.push(pokemon);
-            alreadyCheckedPokemon.add(pokemon);
+            alreadyCheckedPokemon.add(pokemon.name);
           }
         });
-      }
-      console.log(solutionPaths);
-      if (!destinationFound) {
-        //probably don't want to do this
+
+        console.log(solutionPaths);
+
+        // if destination is not found then add the ability. otherwise don't so we can find other solutions
         alreadyCheckedAbilities.add(ability.name);
-        pathArrayCopy.push(ability.name);
-        console.log(pathArrayCopy);
-        return pokePath(
-          origin,
-          destination,
-          pathArrayCopy,
-          alreadyCheckedPokemon,
-          alreadyCheckedAbilities,
-          solutionPaths
-        );
       }
-    } else {
-      return pokePath(
-        origin,
-        destination,
-        pathArrayCopy,
-        alreadyCheckedPokemon,
-        alreadyCheckedAbilities,
-        solutionPaths
-      );
     }
-  }
-  console.log("uhoh");
-  if (!destinationFound) {
-    alreadyCheckedAbilities.add(ability.name);
-    pathArrayCopy.push(ability.name);
-    console.log(pathArrayCopy);
-    return pokePath(
-      origin,
-      destination,
-      pathArrayCopy,
-      alreadyCheckedPokemon,
-      alreadyCheckedAbilities,
-      solutionPaths
-    );
+    if (destinationFound) {
+      return solutionPaths;
+    }
   }
   return solutionPaths;
 
@@ -173,6 +160,6 @@ async function pokePath(
   //console.log(pokemonWithSlam);
 }
 
-pokePath(["pikachu"], "klang").then((solution) => {
+pokePath("pikachu", "klang").then((solution) => {
   console.log(solution);
 });
